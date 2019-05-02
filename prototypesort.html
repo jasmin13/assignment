@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css"
+    />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <form class="form-inline">
+          <div class="col-lg-8"></div>
+          <div class="col-lg-4">
+            <div class="form-group">
+              <input
+                type="text"
+                class="form-control"
+                name="search"
+                id="search"
+                onkeyup="obj.search(this.value)"
+              />
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <table class="table" id="tbl">
+        <!-- <thead>
+          <th><a href="#" onClick="obj.sort()">Name</a></th>
+          <th>email</th>
+          <th>phone</th>
+        </thead>
+        <tbody id="tbldata"></tbody> -->
+      </table>
+    </div>
+  </body>
+  <script>
+    function Main() {
+      this.drawtbl = {};
+
+      this.arr = [];
+
+      const url = "https://randomuser.me/api/?results=5";
+      fetch(url)
+        .then(resp => resp.json())
+        .then(data => {
+          this.arr = data.results;
+          this.drawTable(data.results, this.drawtbl);
+        })
+        .catch(error => console.log(JSON.stringify(error)));
+    }
+
+    Main.prototype.search = function(val) {
+      const searchval = this.arr.filter(serval => {
+        const incVal = serval.email.includes(val);
+        if (incVal == true) {
+          return serval;
+        }
+      });
+
+      this.display(searchval);
+    };
+
+    Main.prototype.sort = function() {
+      const sortArr = this.arr.sort(function(a, b) {
+        return a.name.first < b.name.first
+          ? -1
+          : a.name.first > b.name.first
+          ? 1
+          : 0;
+      });
+      this.display(sortArr);
+    };
+
+    /* Main.prototype.display = function(res) {
+       let tbl = res
+         .map(function(author) {
+           return (
+             "<tr>" +
+             "<td>" +
+             author.name.first +
+             "</td>" +
+             "<td>" +
+             author.email +
+             "</td>" +
+             "<td>" +
+             author.phone +
+             "</td>" +
+             "</tr>"
+           );
+         })
+         .join("");
+       document.getElementById("tbldata").innerHTML = tbl;
+     }; */
+
+    Main.prototype.drawHeader = function(tbl, tblData) {
+      /* const len = tblData.header.length;
+      const row = tbl.insertRow(-1);
+      for (i = 0; i < len; i++) {
+        const headerCell = document.createElement("th");
+        headerCell.innerHTML = tblData.header[i];
+        row.appendChild(headerCell);
+      } */
+    };
+
+    Main.prototype.drawBody = function(tbl, arrData, tblData) {
+      console.log(tbl);
+      console.log(arrData);
+      console.log(tblData);
+      /* for (i = 0; i < tblData.raw; i++) {
+        row = tbl.insertRow(-1);
+        for (j = 0; j < tblData.column; j++) {
+          const cell = row.insertCell(-1);
+          //console.log(arrData[i][j]);
+          //cell.innerHTML = arrData[i][j];
+        }
+      } */
+    };
+
+    Main.prototype.drawTable = function(arrData, drawtbl) {
+      let mapData = arrData.map(function(author) {
+        return [author.name.first, author.email, author.phone];
+      });
+
+      //console.log(arrData);
+      //console.log(drawtbl);
+
+      const tbl = document.getElementById("tbl");
+      this.drawHeader(tbl, drawtbl);
+
+      this.drawBody(tbl, mapData, drawtbl);
+    };
+
+    function Sub(arr, drawtbl) {
+      Main.call(this, arr, drawtbl);
+    }
+
+    Sub.prototype = Object.create(Main.prototype);
+    Sub.prototype.constructor = Sub;
+
+    var obj1 = new Main();
+    console.log(obj1);
+    obj1.drawTable(obj1.arr, {
+      header: ["name", "email", "phone"],
+      raw: 3,
+      column: 3
+    });
+    var obj = new Sub();
+
+    //console.log(obj1);
+    document.getElementById("search").addEventListener("onkeyup", function() {
+      obj.search(arr);
+    });
+  </script>
+</html>

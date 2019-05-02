@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css"
+    />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <form class="form-horizontal">
+            <div class="col-lg-9"></div>
+            <div class="col-lg-3">
+              <div class="form-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  name="search"
+                  id="search"
+                  onkeyup="obj.search(this.value)"
+                />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-12">
+          <table class="table" id="tbl"></table>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script>
+    const mainObj = {
+      main: function() {
+        this.configObj = {
+          name: "Name",
+          email: "Email",
+          phone: "Phone"
+        };
+        let flag = false;
+
+        const drawHeader = (tbl, objConfig) => {
+          var len = Object.keys(objConfig).length;
+          var val = Object.values(objConfig);
+          var row = tbl.insertRow(-1);
+
+          for (i = 0; i < len; i++) {
+            var headerCell = document.createElement("th");
+            var elLink = document.createElement("a");
+            elLink.setAttribute("href", "#");
+            headerCell.appendChild(elLink).innerHTML = val[i];
+            row.appendChild(headerCell);
+          }
+
+          var els = document.querySelectorAll("a");
+          for (var i = 0; i < els.length; i++) {
+            els[i].setAttribute("id", Object.keys(objConfig)[i]);
+            els[i].addEventListener("click", sortData.bind(this, els[i].id));
+          }
+        };
+
+        const drawBody = (tbl, objConfig, dataObj) => {
+          var len = Object.keys(objConfig).length;
+          var key = Object.keys(objConfig);
+
+          for (i = 0; i < dataObj.length; i++) {
+            row = tbl.insertRow(-1);
+            for (j = 0; j < len; j++) {
+              const cell = row.insertCell(-1);
+              cell.innerHTML = dataObj[i][key[j]];
+            }
+          }
+        };
+
+        const drawTable = (objConfig, dataObj) => {
+          const tbl = document.getElementById("tbl");
+          tbl.innerHTML = "";
+
+          this.objData = dataObj;
+
+          drawHeader(tbl, objConfig);
+          drawBody(tbl, objConfig, dataObj);
+        };
+
+        const sortData = objKeys => {
+          if (flag === false) {
+            this.sortArr = this.objData.sort(function(a, b) {
+              return a[objKeys] < b[objKeys] ? -1 : 0;
+            });
+            flag = true;
+          } else {
+            this.sortArr = this.objData.sort(function(a, b) {
+              return a[objKeys] > b[objKeys] ? -1 : 0;
+            });
+            flag = false;
+          }
+
+          drawTable(this.configObj, this.sortArr);
+        };
+
+        const search = val => {
+          const searchval = this.objData.filter(function(res) {
+            for (key in res) {
+              const incData = res[key].includes(val);
+              if (incData === true) {
+                return res;
+              }
+            }
+          });
+
+          drawTable(this.configObj, searchval);
+        };
+
+        return {
+          drawTable,
+          drawHeader,
+          drawBody,
+          sortData,
+          search
+          /* search: function(val) {
+            const searchval = this.objData.filter(function(res) {
+            for (key in res) {
+              const incData = res[key].includes(val);
+              if (incData === true) {
+                return res;
+              }
+            }
+          });
+
+          drawTable(this.configObj, searchval);
+          } */
+        };
+      }
+    };
+
+    const subObj = {
+      sub: function() {
+        const url = "https://randomuser.me/api/?results=5";
+        fetch(url)
+          .then(resp => resp.json())
+          .then(data => {
+            let resData = data.results.map(function(author) {
+              return {
+                email: author.email,
+                name: author.name.first,
+                phone: author.phone
+              };
+            });
+
+            mainObj.main().drawTable(mainObj.configObj, resData);
+          })
+          .catch(error => console.log(JSON.stringify(error)));
+      }
+    };
+
+    const obj = mainObj.main();
+    const objSub = subObj.sub();
+
+    document.getElementById("search").addEventListener("onkeyup", function() {
+      obj.search();
+    });
+  </script>
+</html>

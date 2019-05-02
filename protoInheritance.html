@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-3 pull-right">
+          <input
+            type="text"
+            name="search"
+            id="search"
+            onkeyup="obj.search(this.value);"
+            class="form-control"
+            placeholder="Search"
+          />
+        </div>
+      </div>
+      <table class="table table-bordered" id="tbl"></table>
+    </div>
+  </body>
+  <script>
+    const Parent = function() {
+      this.configObj = {
+        name: "Name",
+        email: "Email",
+        phone: "Phone"
+      };
+
+      this.flag = false;
+    };
+
+    Parent.prototype.sortData = function(objKey) {
+      if (this.flag === false) {
+        this.sortVal = this.objData.sort(function(a, b) {
+          return a[objKey] < b[objKey] ? -1 : 0;
+        });
+        this.flag = true;
+      } else {
+        this.sortVal = this.objData.sort(function(a, b) {
+          return a[objKey] > b[objKey] ? -1 : 0;
+        });
+        this.flag = false;
+      }
+
+      this.drawTable(this.configObj, this.sortVal);
+    };
+
+    Parent.prototype.search = function(val) {
+      const searchData = this.objData.filter(function(res) {
+        for (key in res) {
+          const incData = res[key].includes(val);
+          if (incData === true) {
+            return res;
+          }
+        }
+      });
+
+      this.drawTable(this.configObj, searchData);
+    };
+
+    Parent.prototype.drawHeader = function(tbl, objConfig) {
+      const len = Object.keys(objConfig).length;
+      const val = Object.values(objConfig);
+
+      const row = tbl.insertRow(-1);
+      for (i = 0; i < len; i++) {
+        const header = document.createElement("th");
+        const link = document.createElement("a");
+        link.setAttribute("href", "#");
+        header.appendChild(link).innerHTML = val[i];
+        row.appendChild(header);
+      }
+
+      const link = document.querySelectorAll("a");
+      for (j = 0; j < len; j++) {
+        link[j].setAttribute("id", Object.keys(objConfig)[j]);
+        link[j].addEventListener(
+          "click",
+          this.sortData.bind(this, Object.keys(objConfig)[j])
+        );
+      }
+    };
+
+    Parent.prototype.drawBody = function(tbl, objConfig, dataArr) {
+      const len = Object.keys(objConfig).length;
+      const key = Object.keys(objConfig);
+
+      for (i = 0; i < dataArr.length; i++) {
+        const row = tbl.insertRow(-1);
+        for (j = 0; j < len; j++) {
+          const cell = row.insertCell(-1);
+          cell.innerHTML = dataArr[i][key[j]];
+        }
+      }
+    };
+
+    Parent.prototype.drawTable = function(objConfig, dataArr) {
+      const tbl = document.getElementById("tbl");
+      tbl.innerHTML = "";
+
+      this.objData = dataArr;
+
+      this.drawHeader(tbl, objConfig);
+      this.drawBody(tbl, objConfig, dataArr);
+    };
+
+    const Child = function() {
+      Parent.call(this);
+
+      const api = "https://randomuser.me/api/?results=5";
+
+      fetch(api)
+        .then(res => res.json())
+        .then(data => {
+          resData = data.results.map(function(resp) {
+            return {
+              name: resp.name.first,
+              email: resp.email,
+              phone: resp.phone
+            };
+          });
+
+          this.drawTable(this.configObj, resData);
+        })
+        .catch(error => console.log(JSON.stringify(error)));
+    };
+
+    Child.prototype = Object.create(Parent.prototype);
+    Child.prototype.constructor = Child;
+
+    const obj = new Child();
+
+    document.getElementById("search").addEventListener("onkeyup", function() {
+      obj.search();
+    });
+  </script>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+</html>

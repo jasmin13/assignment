@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css"
+    />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <form class="form-inline">
+          <div class="col-lg-8"></div>
+          <div class="col-lg-4">
+            <div class="form-group">
+              <input
+                type="text"
+                class="form-control"
+                name="search"
+                id="search"
+                onkeyup="obj.search(this.value)"
+              />
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <table class="table">
+        <thead>
+          <th><a href="#" onClick="obj.sort()">Name</a></th>
+          <th>email</th>
+          <th>phone</th>
+        </thead>
+        <tbody id="tbldata"></tbody>
+      </table>
+    </div>
+  </body>
+  <script>
+    const main = function() {
+      const url = "https://randomuser.me/api/?results=5";
+      let arr = [];
+      fetch(url)
+        .then(resp => resp.json())
+        .then(data => {
+          arr = data.results;
+          display(data.results);
+        })
+        .catch(error => display(JSON.stringify(error)));
+
+      const display = res => {
+        let tbl = res
+          .map(function(author) {
+            return (
+              "<tr>" +
+              "<td>" +
+              author.name.first +
+              "</td>" +
+              "<td>" +
+              author.email +
+              "</td>" +
+              "<td>" +
+              author.phone +
+              "</td>" +
+              "</tr>"
+            );
+          })
+          .join("");
+        document.getElementById("tbldata").innerHTML = tbl;
+      };
+
+      return {
+        sort: function() {
+          const sortArr = arr.sort(function(a, b) {
+            return a.name.first < b.name.first
+              ? -1
+              : a.name.first > b.name.first
+              ? 1
+              : 0;
+          });
+          display(sortArr);
+        },
+
+        search: function(val) {
+          const searchval = arr.filter(serval => {
+            const incVal = serval.email.includes(val);
+            if (incVal == true) {
+              return serval;
+            }
+          });
+
+          display(searchval);
+        }
+      };
+    };
+
+    var obj = main();
+
+    document.getElementById("search").addEventListener("onkeyup", function() {
+      obj.search();
+    });
+  </script>
+</html>
